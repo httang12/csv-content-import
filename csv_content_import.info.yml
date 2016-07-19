@@ -1,0 +1,6 @@
+name: CSV Content Import
+type: module
+description: This is a utility for importing csv content into Drupal CMS
+core: 8.x
+package: Site Utilities
+version: 1.0

@@ -1,0 +1,7 @@
+csvcontentimport.importcsv:
+  path: 'csvcontentimport/importcsv'
+  defaults:
+    _form: '\Drupal\csv_content_import\forms\CSVImportForm'
+    _title: 'CSV Content Import'
+  requirements:
+    _permission: 'Use CSV Import'
