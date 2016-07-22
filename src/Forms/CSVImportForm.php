@@ -6,6 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\UrlHelper;
 
+
 /**
  * Created by PhpStorm.
  * User: humingtang
@@ -52,14 +53,36 @@ class CSVImportForm extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
+        $result = file_save_upload('csvimport_file',['file_validate_extensions' => 'csv'],"public://");
 
-        $file = $form_state['storage']['csvimport_file'];
-        // We are done with the file, remove it from storage.
+        $realpath = drupal_realpath($result[0]->getFileUri());
 
-        print_r($file);die;
-        //never save file
-        unset($form_state['storage']['csvimport_file']);
-        //process file
+        //file saved to public, now start processing
+
+        //Step 1: read the FILE line BY LINE, OH YEAH!
+        //Step 2: process each line and create a CONTENT for each! OH YEAH!
+        //Step 3: DONE! OH YEAH!
+
+        $file = fopen($realpath,"r");
+        while(!feof($file))
+        {
+            $dataline = fgets($file);
+            $dataArray = explode(",",$dataline);
+            //element 0 is site name, element 1 is site url
+            $node_elements = array(
+                'type' => 'legacy_site_config',
+                'title' => $dataArray[0],
+                'field_site_url' => $dataArray[1],
+                'field_server_path' => $dataArray[2],
+            );
+            $node = Node::create($node_elements);
+            $node->save();
+        }
+
+        fclose($file);
+
+        //delete file after processing
+        unlink($realpath);
     }
 }
 ?>
