@@ -5,7 +5,7 @@ namespace Drupal\csv_content_import\Forms;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\UrlHelper;
-
+use Drupal\node\Entity\Node;
 
 /**
  * Created by PhpStorm.
@@ -67,8 +67,28 @@ class CSVImportForm extends FormBase {
         while(!feof($file))
         {
             $dataline = fgets($file);
+            print_r($dataline);
             $dataArray = explode(",",$dataline);
-            //element 0 is site name, element 1 is site url
+
+            // check if site exists, if it does DON'T import
+            $siteURL = $dataArray[1];
+
+            // clean up site URL!
+            $siteURL = preg_replace('#^https?://#', '', $siteURL);
+            $siteURL = preg_replace('/^www\./','',$siteURL);
+
+            $query = \Drupal::entityQuery('node')
+                ->condition('type', "legacy_site_config")
+                ->condition('field_site_url',$siteURL);
+
+            $nids = $query->execute();
+            if (is_array($nids) && count($nids) >0 )
+            {
+                // don't do anything if the site config exists
+                continue;
+            }
+
+            // element 0 is site name, element 1 is site url
             $node_elements = array(
                 'type' => 'legacy_site_config',
                 'title' => $dataArray[0],
@@ -83,6 +103,8 @@ class CSVImportForm extends FormBase {
 
         //delete file after processing
         unlink($realpath);
+
+        drupal_set_message(t('Sites are imported'), 'status');
     }
 }
 ?>
